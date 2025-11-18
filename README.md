@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Hardware Configurator
 
-## Getting Started
+Requirement-driven PC/Laptop/Server recommender focused on enterprise and bulk procurement workflows. Users fill a structured brief, a rules engine derives the baseline spec, and OpenRouter (Claude 3.5 Sonnet by default) adds reasoning plus alternatives.
 
-First, run the development server:
+### Tech Stack
+- Next.js App Router + React 19
+- Tailwind CSS v4 (inline directives)
+- API route for rules + OpenRouter chat completion
+
+## Setup
+
+Install dependencies and start the dev server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000` to use the requirement form UI.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `env.sample` to `.env.local` and add your OpenRouter key:
 
-## Learn More
+```
+OPENROUTER_API_KEY=sk-or-xxxxxxxx
+```
 
-To learn more about Next.js, take a look at the following resources:
+Without the key, the UI still shows the rule-based baseline, but AI reasoning is disabled.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Route (Hoppscotch-ready)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Endpoint: `POST http://localhost:3000/api/generate`
 
-## Deploy on Vercel
+Example JSON body:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```json
+{
+  "usageType": "coding",
+  "budgetRange": "1500-2000",
+  "quantity": "20-50",
+  "formFactor": "laptop",
+  "requiredSoftware": ["VS Code", "Docker Desktop"],
+  "brandConstraints": "Dell, Lenovo",
+  "performancePriority": "cpu",
+  "storageRequirements": "1 TB NVMe",
+  "networkingNeeds": "Dual 2.5GbE via dock, Wi-Fi 7",
+  "warrantyPreferences": "3Y onsite NBD",
+  "complianceNotes": "TPM 2.0, Bitlocker ready"
+}
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Use Hoppscotch or any REST client to validate the payload/response before wiring other consumers.
+
+Response payload:
+- `baselineSpec`: Deterministic build derived from rule mappings
+- `aiSummary`: JSON narrative from OpenRouter (null if the key is missing or the call fails)
+- `generatedAt`: ISO timestamp
+
+## Next Steps
+
+- Persist briefs/configurations in MongoDB
+- Add PDF/export pipeline
+- Introduce authentication for multi-tenant procurement teams
