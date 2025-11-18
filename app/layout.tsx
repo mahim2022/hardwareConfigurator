@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hardware Configurator",
-  description: "Requirement-driven hardware recommendations for procurement teams",
+  title: "Rain Computers - Intelligent Hardware Configuration",
+  description: "Enterprise hardware configuration solutions powered by AI. Transform your procurement workflow with intelligent, requirement-driven hardware recommendations.",
 };
 
 export default function RootLayout({

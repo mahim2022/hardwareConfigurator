@@ -2,8 +2,9 @@
 
 import { useState, type ReactNode } from "react";
 
-import type { BaselineSpec } from "@/lib/rules";
+import type { BaselineSpec, RequirementsPayload } from "@/lib/rules";
 import type { AiSummary } from "@/lib/openrouter";
+import { exportToExcel, exportToCSV, type ExportData } from "@/lib/export";
 
 const usageTypes = [
   "office",
@@ -30,6 +31,7 @@ const softwareOptions = [
   "MATLAB",
   "VS Code",
   "PyCharm",
+  "Games",
 ] as const;
 
 type FormState = {
@@ -50,8 +52,10 @@ type FormState = {
 };
 
 type ApiResponse = {
-  baselineSpec: BaselineSpec;
+  requirements: RequirementsPayload;
+  baselineSpec: BaselineSpec | null;
   aiSummary: AiSummary | null;
+  useBaselineFallback?: boolean;
   generatedAt: string;
 };
 
@@ -366,56 +370,67 @@ const RequirementForm = () => {
 
         {result && (
           <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
-                Baseline spec
-              </h4>
-              <ul className="mt-3 space-y-1 text-sm text-slate-200">
-                <li>
-                  <strong>CPU:</strong> {result.baselineSpec.cpu}
-                </li>
-                <li>
-                  <strong>GPU:</strong> {result.baselineSpec.gpu}
-                </li>
-                <li>
-                  <strong>RAM:</strong> {result.baselineSpec.ram}
-                </li>
-                <li>
-                  <strong>Storage:</strong> {result.baselineSpec.storage}
-                </li>
-                <li>
-                  <strong>Networking:</strong> {result.baselineSpec.networking}
-                </li>
-                {result.baselineSpec.display && (
+            {/* Only show baseline spec if AI failed and we're using fallback */}
+            {result.useBaselineFallback && result.baselineSpec && (
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
+                <h4 className="text-sm font-semibold uppercase tracking-wide text-amber-200">
+                  Baseline spec (AI unavailable)
+                </h4>
+                <ul className="mt-3 space-y-1 text-sm text-slate-200">
                   <li>
-                    <strong>Display:</strong> {result.baselineSpec.display}
+                    <strong>CPU:</strong> {result.baselineSpec.cpu}
                   </li>
+                  <li>
+                    <strong>GPU:</strong> {result.baselineSpec.gpu}
+                  </li>
+                  <li>
+                    <strong>RAM:</strong> {result.baselineSpec.ram}
+                  </li>
+                  <li>
+                    <strong>Storage:</strong> {result.baselineSpec.storage}
+                  </li>
+                  <li>
+                    <strong>Networking:</strong> {result.baselineSpec.networking}
+                  </li>
+                  {result.baselineSpec.display && (
+                    <li>
+                      <strong>Display:</strong> {result.baselineSpec.display}
+                    </li>
+                  )}
+                  <li>
+                    <strong>Estimated unit price:</strong> {result.baselineSpec.estimatedUnitPrice}
+                  </li>
+                </ul>
+                {result.baselineSpec.accessories && result.baselineSpec.accessories.length > 0 && (
+                  <div className="mt-3 text-xs text-slate-400">
+                    Accessories: {result.baselineSpec.accessories.join(", ")}
+                  </div>
                 )}
-                <li>
-                  <strong>Estimated unit price:</strong> {result.baselineSpec.estimatedUnitPrice}
-                </li>
-              </ul>
-              {result.baselineSpec.accessories && result.baselineSpec.accessories.length > 0 && (
-                <div className="mt-3 text-xs text-slate-400">
-                  Accessories: {result.baselineSpec.accessories.join(", ")}
+                <div className="mt-4 text-xs text-slate-400">
+                  Notes: {result.baselineSpec.notes.join(" • ")}
                 </div>
-              )}
-              <div className="mt-4 text-xs text-slate-400">
-                Notes: {result.baselineSpec.notes.join(" • ")}
               </div>
-            </div>
+            )}
 
             {result.aiSummary ? (
               <div className="space-y-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
                 <h4 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">
-                  AI Refinement
+                  AI-Generated Configuration
                 </h4>
                 <div className="space-y-2 text-sm text-slate-100">
                   <p>
                     <strong>Best fit:</strong> {result.aiSummary.bestFitConfiguration}
                   </p>
+                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
+                    <p className="text-base font-semibold text-emerald-200">
+                      <strong>Unit Price:</strong> {result.aiSummary.unitPrice}
+                    </p>
+                    <p className="text-lg font-bold text-emerald-100">
+                      <strong>Total Price (All Units):</strong> {result.aiSummary.totalPrice}
+                    </p>
+                  </div>
                   <p>
-                    <strong>Price estimate:</strong> {result.aiSummary.priceEstimate}
+                    <strong>Detailed Price Breakdown:</strong> {result.aiSummary.priceEstimate}
                   </p>
                   <p>
                     <strong>Reasoning:</strong> {result.aiSummary.reasoning}
@@ -438,9 +453,47 @@ const RequirementForm = () => {
                   </div>
                 )}
               </div>
-            ) : (
+            ) : !result.useBaselineFallback ? (
               <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 text-sm text-amber-100">
                 AI summary unavailable. Add an `OPENROUTER_API_KEY` to enable the reasoning layer.
+              </div>
+            ) : null}
+
+            {result && (
+              <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+                <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+                  Export Quotation
+                </h4>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <button
+                    onClick={async () => {
+                      const exportData: ExportData = {
+                        requirements: result.requirements,
+                        baselineSpec: result.baselineSpec || undefined,
+                        aiSummary: result.aiSummary,
+                        generatedAt: result.generatedAt,
+                      };
+                      await exportToExcel(exportData);
+                    }}
+                    className="flex-1 rounded-xl bg-emerald-500/90 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
+                  >
+                    📊 Download Excel
+                  </button>
+                  <button
+                    onClick={() => {
+                      const exportData: ExportData = {
+                        requirements: result.requirements,
+                        baselineSpec: result.baselineSpec || undefined,
+                        aiSummary: result.aiSummary,
+                        generatedAt: result.generatedAt,
+                      };
+                      exportToCSV(exportData);
+                    }}
+                    className="flex-1 rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-2 text-sm font-semibold text-white transition hover:border-emerald-500/50 hover:bg-slate-800"
+                  >
+                    📄 Download CSV
+                  </button>
+                </div>
               </div>
             )}
 

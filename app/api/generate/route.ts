@@ -62,19 +62,26 @@ export async function POST(request: Request) {
       }
     }
 
-    const baselineSpec = deriveBaselineSpec(normalized);
-
+    // Try AI first - if it works, use it exclusively
     let aiSummary = null;
+    let baselineSpec = null;
+    let useBaselineFallback = false;
+
     try {
-      aiSummary = await getOpenRouterSummary(normalized, baselineSpec);
+      aiSummary = await getOpenRouterSummary(normalized);
+      // AI succeeded - we'll use AI-only approach
     } catch (error) {
-      console.error("OpenRouter summary failed", error);
+      console.error("OpenRouter summary failed, falling back to baseline spec", error);
+      // AI failed - fall back to baseline spec
+      useBaselineFallback = true;
+      baselineSpec = deriveBaselineSpec(normalized);
     }
 
     return NextResponse.json({
       requirements: normalized,
-      baselineSpec,
+      baselineSpec: baselineSpec || null, // Only include if AI failed
       aiSummary,
+      useBaselineFallback, // Flag to indicate which method was used
       generatedAt: new Date().toISOString(),
     });
   } catch (error) {

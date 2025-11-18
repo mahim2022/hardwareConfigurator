@@ -1,8 +1,10 @@
-import type { BaselineSpec, RequirementsPayload } from "./rules";
+import type { RequirementsPayload } from "./rules";
 
 export type AiSummary = {
   bestFitConfiguration: string;
   priceEstimate: string;
+  unitPrice: string;
+  totalPrice: string;
   reasoning: string;
   bulkScaling: string;
   alternatives: { tier: "higher" | "lower" | "lateral"; summary: string }[];
@@ -36,8 +38,7 @@ const parseCompletionContent = (content: unknown): string => {
 };
 
 export const getOpenRouterSummary = async (
-  requirements: RequirementsPayload,
-  baseline: BaselineSpec
+  requirements: RequirementsPayload
 ): Promise<AiSummary> => {
   if (!process.env.OPENROUTER_API_KEY) {
     throw new Error("OPENROUTER_API_KEY is not configured");
@@ -51,28 +52,27 @@ export const getOpenRouterSummary = async (
       "HTTP-Referer": "https://hardwareconfigurator.local",
       "X-Title": "Hardware Configurator",
     },
-    body: JSON.stringify({
-      model: DEFAULT_MODEL,
-      // Keep this intentionally modest so it fits free / low-credit accounts.
-      max_tokens: 600,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a senior enterprise hardware architect who turns structured procurement requirements into succinct summaries. Always answer in strict JSON with snake_case keys exactly as follows: {\"best_fit_configuration\": string, \"price_estimate\": string, \"reasoning\": string, \"bulk_scaling\": string, \"alternatives\": [{\"tier\": \"higher\"|\"lower\"|\"lateral\", \"summary\": string}]}",
-        },
-        {
-          role: "user",
-          content: JSON.stringify({
-            requirements,
-            baseline,
-            instructions:
-              "Use the baseline spec as the foundation, adjust where it makes sense, and keep recommendations enterprise-ready. Keep each field concise (1–4 sentences max).",
-          }),
-        },
-      ],
-      temperature: 0.4,
-    }),
+      body: JSON.stringify({
+        model: DEFAULT_MODEL,
+        // Increased tokens for more detailed responses
+        max_tokens: 100,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a senior enterprise hardware architect with deep knowledge of current market prices, component availability, and procurement best practices. You conduct thorough research on latest hardware prices from major vendors (Dell, HP, Lenovo, etc.) and provide detailed, accurate pricing information. Always answer in strict JSON with snake_case keys exactly as follows: {\"best_fit_configuration\": string (detailed component breakdown), \"price_estimate\": string (detailed price breakdown per component), \"unit_price\": string (single unit price in USD format like \"$1,250.00\"), \"total_price\": string (total for all units in USD format like \"$25,000.00\"), \"reasoning\": string (detailed explanation of choices), \"bulk_scaling\": string (detailed bulk procurement notes), \"alternatives\": [{\"tier\": \"higher\"|\"lower\"|\"lateral\", \"summary\": string}]}. IMPORTANT: Research and provide current market prices. Calculate total_price based on the quantity specified in requirements. Be specific with component models, prices, and vendor recommendations.",
+          },
+          {
+            role: "user",
+            content: JSON.stringify({
+              requirements,
+              instructions:
+                "Based solely on the user requirements provided, conduct deep research on latest hardware prices from major enterprise vendors (Dell, HP, Lenovo, etc.). Generate a complete hardware configuration from scratch that best matches the requirements. Provide detailed component-level pricing with specific model numbers. Calculate both unit_price (per device) and total_price (for the entire quantity specified). For gaming PCs, ensure software requirements include gaming capabilities. Be thorough and accurate with pricing research - use real current market prices. Provide detailed reasoning for each component choice. Consider all requirements including usage type, budget range, quantity, form factor, required software, brand constraints, performance priority, storage, networking, durability, warranty, power efficiency, and compliance needs.",
+            }),
+          },
+        ],
+        temperature: 0.4,
+      }),
   });
 
   if (!response.ok) {
@@ -87,10 +87,12 @@ export const getOpenRouterSummary = async (
   try {
     const parsed = JSON.parse(text);
     return {
-      bestFitConfiguration: parsed.best_fit_configuration,
-      priceEstimate: parsed.price_estimate,
-      reasoning: parsed.reasoning,
-      bulkScaling: parsed.bulk_scaling,
+      bestFitConfiguration: parsed.best_fit_configuration || "",
+      priceEstimate: parsed.price_estimate || "",
+      unitPrice: parsed.unit_price || parsed.price_estimate || "Price on request",
+      totalPrice: parsed.total_price || "Price on request",
+      reasoning: parsed.reasoning || "",
+      bulkScaling: parsed.bulk_scaling || "",
       alternatives: Array.isArray(parsed.alternatives)
         ? parsed.alternatives.map((alt: { tier: string; summary: string }) => ({
             tier: (alt.tier as AiSummary["alternatives"][number]["tier"]) ?? "lateral",
