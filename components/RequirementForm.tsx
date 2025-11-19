@@ -439,19 +439,7 @@ const RequirementForm = () => {
                     <strong>Bulk scaling:</strong> {result.aiSummary.bulkScaling}
                   </p>
                 </div>
-                {result.aiSummary.alternatives?.length > 0 && (
-                  <div className="space-y-2 text-sm text-slate-200">
-                    <strong>Alternatives</strong>
-                    <ul className="list-disc pl-5 text-xs text-slate-300">
-                      {result.aiSummary.alternatives.map((alt) => (
-                        <li key={`${alt.tier}-${alt.summary.slice(0, 12)}`}>
-                          <span className="font-semibold capitalize">{alt.tier}:</span>{" "}
-                          {alt.summary}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {/* Alternatives removed: no longer requested from OpenRouter */}
               </div>
             ) : !result.useBaselineFallback ? (
               <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 text-sm text-amber-100">
