@@ -88,12 +88,7 @@ export const exportToExcel = async (data: ExportData, filename = "hardware-quota
       ["", ""]
     );
 
-    if (data.aiSummary.alternatives.length > 0) {
-      summaryData.push(["ALTERNATIVE OPTIONS", ""]);
-      data.aiSummary.alternatives.forEach((alt) => {
-        summaryData.push([`${alt.tier.toUpperCase()} Option`, alt.summary]);
-      });
-    }
+    // Alternatives removed from AI summary
   }
 
   if (data.baselineSpec?.accessories && data.baselineSpec.accessories.length > 0) {
@@ -186,12 +181,7 @@ export const exportToCSV = (data: ExportData, filename = "hardware-quotation") =
       ["Bulk Scaling Notes", data.aiSummary.bulkScaling]
     );
 
-    if (data.aiSummary.alternatives.length > 0) {
-      rows.push([""], ["ALTERNATIVE OPTIONS"]);
-      data.aiSummary.alternatives.forEach((alt) => {
-        rows.push([`${alt.tier.toUpperCase()} Option`, alt.summary]);
-      });
-    }
+    // Alternatives removed from AI summary
   }
 
   // Convert to CSV string

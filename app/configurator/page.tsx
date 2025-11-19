@@ -31,8 +31,8 @@ export default function ConfiguratorPage() {
             Requirement-driven PC, laptop & server builds for bulk procurement teams
           </h1>
           <p className="text-base text-slate-300 md:text-lg">
-            Feed the rules engine with structured intent, then let OpenRouter-backed reasoning
-            explain the recommendation. Built for sourcing teams, not retail shoppers.
+            Feed the rules engine with structured intent, then let our systems reasoning
+            give you the recommendation. Built for sourcing teams, not retail shoppers.
           </p>
         </header>
 

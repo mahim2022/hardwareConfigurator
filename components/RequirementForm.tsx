@@ -357,7 +357,7 @@ const RequirementForm = () => {
 
         {!result && !isSubmitting && (
           <div className="rounded-2xl border border-dashed border-slate-700/60 p-6 text-sm text-slate-400">
-            Run the generator to see the baseline spec, AI summary, price envelope, and scalable
+            Run the generator to see the baseline spec, summary, price envelope, and scalable
             deployment notes.
           </div>
         )}
@@ -415,7 +415,7 @@ const RequirementForm = () => {
             {result.aiSummary ? (
               <div className="space-y-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
                 <h4 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">
-                  AI-Generated Configuration
+                  Our system generated Configuration
                 </h4>
                 <div className="space-y-2 text-sm text-slate-100">
                   <p>
@@ -443,7 +443,7 @@ const RequirementForm = () => {
               </div>
             ) : !result.useBaselineFallback ? (
               <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 text-sm text-amber-100">
-                AI summary unavailable. Add an `OPENROUTER_API_KEY` to enable the reasoning layer.
+                Real time configuration
               </div>
             ) : null}
 

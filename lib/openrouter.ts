@@ -10,7 +10,8 @@ export type AiSummary = {
 };
 
 const OPENROUTER_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions";
-const DEFAULT_MODEL = "tngtech/deepseek-r1t2-chimera:free";
+// Model can be specified via `.env` using `OPENROUTER_MODEL`. Falls back to previous default.
+const DEFAULT_MODEL = process.env.OPENROUTER_MODEL || "tngtech/deepseek-r1t2-chimera:free";
 
 // parseCompletionContent removed — message content will be handled directly where used
 
