@@ -34,6 +34,48 @@ const softwareOptions = [
   "Games",
 ] as const;
 
+const storageOptions = [
+  "1 TB NVMe",
+  "512 GB NVMe",
+  "2 TB NVMe",
+  "4 TB HDD",
+  "Custom",
+] as const;
+
+const networkingOptions = [
+  "1GbE",
+  "2.5GbE",
+  "10GbE",
+  "Wi-Fi 6",
+  "Thunderbolt 4",
+  "Custom",
+] as const;
+
+const durabilityOptions = [
+  "Standard",
+  "Rugged (MIL-STD)",
+  "Lightweight / Portable",
+  "Semi-rugged",
+  "Custom",
+] as const;
+
+const warrantyOptions = [
+  "1Y standard",
+  "3Y onsite NBD",
+  "5Y onsite",
+  "Extended (quote)",
+] as const;
+
+const powerOptions = [
+  "Standard PSU",
+  "80Plus Bronze",
+  "80Plus Silver",
+  "80Plus Gold",
+  "80Plus Platinum",
+] as const;
+
+const complianceOptions = ["TPM 2.0", "TAA", "EPEAT", "None", "Other"] as const;
+
 type FormState = {
   usageType: (typeof usageTypes)[number];
   budgetRange: string;
@@ -67,12 +109,12 @@ const initialState: FormState = {
   requiredSoftware: ["Microsoft Office"],
   brandConstraints: "Dell, HP, Lenovo",
   performancePriority: "balanced",
-  storageRequirements: "",
-  networkingNeeds: "",
-  durabilityNeeds: "",
-  warrantyPreferences: "3Y onsite NBD",
-  powerPreferences: "",
-  complianceNotes: "",
+  storageRequirements: "1 TB NVMe",
+  networkingNeeds: "1GbE",
+  durabilityNeeds: "Standard",
+  warrantyPreferences: "1Y standard",
+  powerPreferences: "80Plus Platinum",
+  complianceNotes: "TPM 2.0",
   customSoftware: "",
 };
 
@@ -278,56 +320,96 @@ const RequirementForm = () => {
 
         <div className="grid gap-4 lg:grid-cols-2">
           <Field label="Storage Requirements">
-            <textarea
-              className="min-h-[88px] rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
+            <select
+              className="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
               value={form.storageRequirements}
               onChange={(event) => handleChange("storageRequirements", event.target.value)}
-              placeholder="1 TB NVMe, 4 TB NAS"
-            />
+            >
+              <option value="">Select storage</option>
+              {storageOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
           </Field>
 
           <Field label="Networking / I/O Needs">
-            <textarea
-              className="min-h-[88px] rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
+            <select
+              className="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
               value={form.networkingNeeds}
               onChange={(event) => handleChange("networkingNeeds", event.target.value)}
-              placeholder="Dual 2.5GbE, HDMI 2.1, Thunderbolt 4"
-            />
+            >
+              <option value="">Select networking</option>
+              {networkingOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
           </Field>
 
           <Field label="Durability & Mobility">
-            <textarea
-              className="min-h-[88px] rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
+            <select
+              className="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
               value={form.durabilityNeeds}
               onChange={(event) => handleChange("durabilityNeeds", event.target.value)}
-              placeholder="Rugged MIL-STD, <1.2kg, 12h battery"
-            />
+            >
+              <option value="">Select durability</option>
+              {durabilityOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
           </Field>
 
           <Field label="Warranty & Support">
-            <textarea
-              className="min-h-[88px] rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
+            <select
+              className="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
               value={form.warrantyPreferences}
               onChange={(event) => handleChange("warrantyPreferences", event.target.value)}
-            />
+            >
+              <option value="">Select warranty</option>
+              {warrantyOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
           </Field>
 
           <Field label="Power Efficiency">
-            <textarea
-              className="min-h-[88px] rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
+            <select
+              className="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
               value={form.powerPreferences}
               onChange={(event) => handleChange("powerPreferences", event.target.value)}
-              placeholder="80Plus Platinum PSU, EPEAT Gold"
-            />
+            >
+              <option value="">Select power tier</option>
+              {powerOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
           </Field>
 
           <Field label="Compliance / Policy Notes">
-            <textarea
-              className="min-h-[88px] rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
-              value={form.complianceNotes}
-              onChange={(event) => handleChange("complianceNotes", event.target.value)}
-              placeholder="TPM 2.0, TAA compliant"
-            />
+            <div className="flex flex-col gap-2">
+              {complianceOptions.map((opt) => (
+                <label key={opt} className="inline-flex items-center gap-3 text-sm text-slate-200">
+                  <input
+                    type="radio"
+                    name="compliance"
+                    value={opt}
+                    checked={form.complianceNotes === opt}
+                    onChange={() => handleChange("complianceNotes", opt)}
+                    className="rounded border-slate-600 bg-transparent"
+                  />
+                  {opt}
+                </label>
+              ))}
+            </div>
           </Field>
         </div>
 
