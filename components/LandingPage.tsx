@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import UserNav from "@/components/UserNav";
 
 const LandingPage = () => {
   return (
@@ -33,6 +34,10 @@ const LandingPage = () => {
             >
               Launch Configurator
             </Link>
+            {/* User nav (login / profile / logout) */}
+            <div className="ml-2">
+              <UserNav />
+            </div>
           </div>
         </div>
       </nav>

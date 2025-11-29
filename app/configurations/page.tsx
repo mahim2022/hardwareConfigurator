@@ -1,9 +1,9 @@
 import Link from "next/link";
-import RequirementForm from "@/components/RequirementForm";
 import AuthGuard from "@/components/AuthGuard";
 import UserNav from "@/components/UserNav";
+import ConfigHistoryList from "@/components/ConfigHistoryList";
 
-export default function ConfiguratorPage() {
+export default function ConfigurationsPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       {/* Navigation */}
@@ -15,37 +15,38 @@ export default function ConfiguratorPage() {
             </div>
             <span className="text-xl font-semibold">Rain Computers</span>
           </Link>
+
           <div className="flex items-center gap-6">
             <Link
-              href="/"
+              href="/configurator"
               className="text-sm text-slate-300 transition hover:text-emerald-400"
             >
-              ← Back to Home
+              ← Back to Configurator
             </Link>
             <UserNav />
           </div>
         </div>
       </nav>
 
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-6 py-16 lg:py-24">
-        <header className="space-y-4">
+      <div className="mx-auto max-w-6xl px-6 py-16 lg:py-24">
+        {/* Header */}
+        <header className="space-y-4 mb-10">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-300">
-            Hardware Configurator
+            Configuration History
           </p>
-          <h1 className="text-3xl font-semibold leading-tight text-white md:text-4xl">
-            Requirement-driven PC, laptop & server builds for bulk procurement teams
+          <h1 className="text-3xl font-semibold leading-tight md:text-4xl">
+            Previously Generated Hardware Configurations
           </h1>
           <p className="text-base text-slate-300 md:text-lg">
-            Feed the rules engine with structured intent, then let our systems reasoning
-            give you the recommendation. Built for sourcing teams, not retail shoppers.
+            Review your past recommendations, pricing, AI summaries, and
+            procurement-ready system builds.
           </p>
         </header>
 
         <AuthGuard>
-          <RequirementForm />
+          <ConfigHistoryList />
         </AuthGuard>
       </div>
     </div>
   );
 }
-
