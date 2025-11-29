@@ -41,6 +41,7 @@ export async function GET() {
         reasoning,
         bulk_scaling AS "bulkScaling",
         used_ai AS "usedAi",
+        status,
         created_at AS "createdAt"
       FROM configurations
       WHERE user_id = $1

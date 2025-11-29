@@ -22,13 +22,25 @@ export default function UserNav() {
     }
   }, []);
 
-  function handleLogout() {
+  async function handleLogout() {
     try {
+      // Call server logout route to ensure server-side cookie is cleared
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (err) {
+      console.error("Logout API call failed:", err);
+    }
+
+    try {
+      // Clear client-side storage
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
+
+      // Attempt to clear cookie on client as well (if not HttpOnly)
+      document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     } catch (e) {
       // ignore
     }
+
     router.push("/");
   }
 
