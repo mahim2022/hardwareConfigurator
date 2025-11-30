@@ -201,9 +201,9 @@ const RequirementForm = () => {
       setIsSubmitting(false);
     }
   };
-
+  console.log(result?.aiSummary?.bestFitConfiguration)
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
+    <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-3">
           <Badge label="Input Layer" />
@@ -497,29 +497,54 @@ const RequirementForm = () => {
             {result.aiSummary ? (
               <div className="space-y-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
                 <h4 className="text-sm font-semibold uppercase tracking-wide text-emerald-200">
-                  Our system generated Configuration
+                  AI enhanced summary
                 </h4>
-                <div className="space-y-2 text-sm text-slate-100">
-                  <p>
-                    <strong>Best fit:</strong> {result.aiSummary.bestFitConfiguration}
-                  </p>
-                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
-                    <p className="text-base font-semibold text-emerald-200">
-                      <strong>Unit Price:</strong> {result.aiSummary.unitPrice}
-                    </p>
-                    <p className="text-lg font-bold text-emerald-100">
-                      <strong>Total Price (All Units):</strong> {result.aiSummary.totalPrice}
-                    </p>
+
+                {/* Configuration Summary Table */}
+                <div className="space-y-4">
+                  {/* Best Fit Configuration - Large & Prominent */}
+                  <div className="rounded-xl border-2 border-emerald-500/50 bg-linear-to-b from-emerald-500/15 to-emerald-600/5 p-6 shadow-lg shadow-emerald-500/10">
+                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-300 mb-2">Best Fit</p>
+                    <p className="text-2xl font-bold text-emerald-100 leading-snug">{result.aiSummary.bestFitConfiguration}</p>
                   </div>
-                  <p>
-                    <strong>Detailed Price Breakdown:</strong> {result.aiSummary.priceEstimate}
-                  </p>
-                  <p>
-                    <strong>Reasoning:</strong> {result.aiSummary.reasoning}
-                  </p>
-                  <p>
-                    <strong>Bulk scaling:</strong> {result.aiSummary.bulkScaling}
-                  </p>
+
+                  {/* Price Details - Toned Down */}
+                  <div className="overflow-hidden rounded-xl border border-slate-700/40 bg-slate-900/30">
+                    <table className="w-full text-xs">
+                      <tbody>
+                        <tr className="border-b border-slate-700/30">
+                          <td className="px-4 py-2 font-medium text-slate-400">Unit price</td>
+                          <td className="px-4 py-2 text-slate-300">{result.aiSummary.unitPrice}</td>
+                        </tr>
+                        <tr>
+                          <td className="px-4 py-2 font-medium text-slate-400">Price breakdown</td>
+                          <td className="px-4 py-2 text-slate-300">{result.aiSummary.priceEstimate}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Reasoning - Eye Catching */}
+                <div className="rounded-xl border-2 border-amber-500/50 bg-linear-to-r from-amber-500/10 to-amber-600/5 p-4 shadow-lg shadow-amber-500/10">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xl">💡</div>
+                    <div className="flex-1">
+                      <p className="text-xs font-bold uppercase tracking-widest text-amber-300">Strategic Reasoning</p>
+                      <p className="mt-2 text-sm leading-relaxed text-amber-50">{result.aiSummary.reasoning}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bulk Scaling - Eye Catching */}
+                <div className="rounded-xl border-2 border-violet-500/50 bg-linear-to-r from-violet-500/10 to-purple-600/5 p-4 shadow-lg shadow-violet-500/10">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xl">📈</div>
+                    <div className="flex-1">
+                      <p className="text-xs font-bold uppercase tracking-widest text-violet-300">Bulk Scaling Strategy</p>
+                      <p className="mt-2 text-sm leading-relaxed text-violet-50">{result.aiSummary.bulkScaling}</p>
+                    </div>
+                  </div>
                 </div>
                 {/* Alternatives removed: no longer requested from OpenRouter */}
               </div>

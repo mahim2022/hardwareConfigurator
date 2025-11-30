@@ -57,7 +57,6 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> | { id: string } }) {
   try {
     const token = (await cookies()).get("auth_token")?.value;
-    // console.log("PUT configuration with token:", token);
     if (!token) {
       return NextResponse.json({ error: "Unauthorized: No token" }, { status: 401 });
     }
@@ -65,7 +64,6 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     let decoded: any;
     try {
       decoded = jwt.verify(token, process.env.AUTH_SECRET || "secret");
-      // console.log("Decoded token:", decoded);
     } catch (err) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }

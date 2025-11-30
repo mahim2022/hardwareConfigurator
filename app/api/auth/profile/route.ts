@@ -37,7 +37,6 @@ export async function GET(req: NextRequest) {
     const result = await query("SELECT id, email, name, created_at, user_type FROM users WHERE id = $1", [
       decoded.userId,
     ]);
-    // console.log("Profile fetch result:", result);
     if (result.rows.length === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

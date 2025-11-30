@@ -6,7 +6,6 @@ import { query } from "@/lib/db";
 export async function GET() {
   try {
     const token = (await cookies()).get("auth_token")?.value;
-    console.log("Auth token:", token);
     if (!token) {
       return NextResponse.json(
         { error: "Unauthorized: No token" },
@@ -28,7 +27,6 @@ export async function GET() {
     }
 
     const userId = decoded.userId;
-    // console.log("Fetching configurations for user ID:", userId);
 
     const sql = `
       SELECT
@@ -49,7 +47,6 @@ export async function GET() {
     `;
 
     const result = await query(sql, [userId]);
-    // console.log(result.rows);
     return NextResponse.json(
       {
         success: true,

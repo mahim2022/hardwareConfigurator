@@ -24,10 +24,9 @@ export default function UserNav() {
 
   async function handleLogout() {
     try {
-      // Call server logout route to ensure server-side cookie is cleared
       await fetch("/api/auth/logout", { method: "POST" });
     } catch (err) {
-      console.error("Logout API call failed:", err);
+      // Logout API call failed - continue with local cleanup
     }
 
     try {
