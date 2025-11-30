@@ -48,6 +48,12 @@ export default function UserNav() {
     return (
       <div className="flex items-center gap-4">
         <Link
+          href="/configurations"
+          className="text-sm text-slate-300 transition hover:text-emerald-400"
+        >
+          Configurations
+        </Link>
+        <Link
           href="/login"
           className="text-sm text-slate-300 transition hover:text-emerald-400"
         >
@@ -65,6 +71,12 @@ export default function UserNav() {
 
   return (
     <div className="flex items-center gap-4">
+      <Link
+        href="/configurations"
+        className="text-sm text-slate-200 transition hover:text-emerald-300"
+      >
+        Configurations
+      </Link>
       <Link
         href="/profile"
         className="text-sm text-slate-200 transition hover:text-emerald-300"

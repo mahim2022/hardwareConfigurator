@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { query } from "@/lib/db";
@@ -6,7 +7,16 @@ import { verifyToken, getTokenFromRequest } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const token = getTokenFromRequest(req);
+    // Try Authorization header first, fall back to cookie named `auth_token`.
+    let token = getTokenFromRequest(req);
+    if (!token) {
+      try {
+        const cookieStore = await cookies();
+        token = cookieStore.get("auth_token")?.value ?? null;
+      } catch (e) {
+        token = null;
+      }
+    }
 
     if (!token) {
       return NextResponse.json(
@@ -24,15 +34,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const result = await query("SELECT id, email, name, created_at FROM users WHERE id = $1", [
+    const result = await query("SELECT id, email, name, created_at, user_type FROM users WHERE id = $1", [
       decoded.userId,
     ]);
-
+    // console.log("Profile fetch result:", result);
     if (result.rows.length === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, user: result.rows[0] }, { status: 200 });
+    return NextResponse.json({ success: true, user: result.rows[0], tokenClaims: decoded }, { status: 200 });
   } catch (error) {
     console.error("Get profile error:", error);
     return NextResponse.json(

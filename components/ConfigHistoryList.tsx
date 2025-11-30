@@ -109,6 +109,8 @@ export default function ConfigHistoryList() {
   const [configs, setConfigs] = useState<ConfigRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<ConfigRecord | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     fetch("/api/configurations")
@@ -118,6 +120,18 @@ export default function ConfigHistoryList() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    // Fetch profile to determine if user is admin (server-verified via cookie)
+    fetch("/api/auth/profile")
+      .then(res => res.json())
+      .then(data => {
+        // const claims = data?.tokenClaims;
+        // const role = claims?.user_type ?? claims?.role ?? claims?.userType ?? null;
+        const role = data?.user?.user_type ?? null;
+        
+        setIsAdmin(role === "admin");
+      })
+      .catch(() => {});
   }, []);
 
   if (loading) return <p className="text-slate-400">Loading history…</p>;
@@ -128,7 +142,6 @@ export default function ConfigHistoryList() {
         No configurations found. Generate one first.
       </p>
     );
-    
   return (
     <div className="grid gap-6">
       {configs.map((item) => (
@@ -153,16 +166,14 @@ export default function ConfigHistoryList() {
               <p className="mt-2">
                 <span
                   className={`inline-block rounded-md px-2 py-0.5 text-xs font-semibold ${
-                    item.status === "Completed"
+                    item.status === "approved"
                       ? "bg-emerald-500/20 text-emerald-300"
-                      : item.status === "Pending"
-                      ? "bg-yellow-500/20 text-yellow-300"
-                      : item.status === "Failed"
+                      : item.status === "rejected"
                       ? "bg-rose-500/20 text-rose-300"
                       : "bg-slate-800 text-slate-300"
                   }`}
                 >
-                  {item.status ?? "—"}
+                  {item.status ? (item.status.charAt(0).toUpperCase() + item.status.slice(1)) : "—"}
                 </span>
               </p>
             </div>
@@ -198,12 +209,54 @@ export default function ConfigHistoryList() {
           <div className="relative w-full max-w-3xl rounded-lg bg-slate-900/95 p-6 shadow-lg">
             <div className="flex items-start justify-between">
               <h3 className="text-lg font-semibold text-white">Configuration #{selected.id}</h3>
-              <button
-                className="text-slate-300 hover:text-rose-400"
-                onClick={() => setSelected(null)}
-              >
-                Close
-              </button>
+              <div className="flex items-center gap-3">
+                {isAdmin && (
+                  <select
+                    value={selected.status ?? ""}
+                    onChange={e => {
+                      const newStatus = e.target.value;
+                      // Only allow approved/rejected values
+                      if (!["approved", "rejected"].includes(newStatus)) return;
+                      // update local selected and perform server update
+                      (async () => {
+                        try {
+                          setUpdatingStatus(true);
+                          const res = await fetch(`/api/configurations/${selected.id}`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ status: newStatus }),
+                          });
+                          const resp = await res.json();
+                          if (res.ok) {
+                            // update local state and configs list
+                            const updated = { ...selected, status: resp.configuration.status } as ConfigRecord;
+                            setSelected(updated);
+                            setConfigs(prev => prev.map(c => (c.id === updated.id ? { ...c, status: updated.status } : c)));
+                          } else {
+                            console.error("Failed to update status:", resp);
+                          }
+                        } catch (err) {
+                          console.error(err);
+                        } finally {
+                          setUpdatingStatus(false);
+                        }
+                      })();
+                    }}
+                    className="rounded-md bg-slate-800 text-sm text-slate-200 px-2 py-1"
+                  >
+                    <option value="">Select status</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                )}
+
+                <button
+                  className="text-slate-300 hover:text-rose-400"
+                  onClick={() => setSelected(null)}
+                >
+                  Close
+                </button>
+              </div>
             </div>
 
             <p className="mt-1 text-sm text-slate-400">{new Date(selected.createdAt).toLocaleString()}</p>
