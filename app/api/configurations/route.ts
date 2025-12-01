@@ -28,25 +28,34 @@ export async function GET() {
 
     const userId = decoded.userId;
 
+    // Check if user is admin
+    const userResult = await query(
+      "SELECT user_type FROM users WHERE id = $1",
+      [userId]
+    );
+    const isAdmin = userResult.rows[0]?.user_type === "admin";
+
     const sql = `
       SELECT
-        id,
-        requirements,
-        best_fit_configuration AS "bestFitConfiguration",
-        price_estimate AS "priceEstimate",
-        unit_price AS "unitPrice",
-        total_price AS "totalPrice",
-        reasoning,
-        bulk_scaling AS "bulkScaling",
-        used_ai AS "usedAi",
-        status,
-        created_at AS "createdAt"
-      FROM configurations
-      WHERE user_id = $1
-      ORDER BY created_at DESC
+        c.id,
+        c.requirements,
+        c.best_fit_configuration AS "bestFitConfiguration",
+        c.price_estimate AS "priceEstimate",
+        c.unit_price AS "unitPrice",
+        c.total_price AS "totalPrice",
+        c.reasoning,
+        c.bulk_scaling AS "bulkScaling",
+        c.used_ai AS "usedAi",
+        c.status,
+        c.created_at AS "createdAt",
+        u.email AS "userEmail"
+      FROM configurations c
+      JOIN users u ON c.user_id = u.id
+      ${isAdmin ? "" : "WHERE c.user_id = $1"}
+      ORDER BY c.created_at DESC
     `;
 
-    const result = await query(sql, [userId]);
+    const result = await query(sql, isAdmin ? [] : [userId]);
     return NextResponse.json(
       {
         success: true,

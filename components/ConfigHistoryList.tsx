@@ -11,6 +11,7 @@ interface ConfigRecord {
   bestFitConfiguration: string | null;
   usedAi: boolean;
   status?: string | null;
+  userEmail?: string | null;
 }
 
 export default function ConfigHistoryList() {
@@ -19,6 +20,7 @@ export default function ConfigHistoryList() {
   const [selected, setSelected] = useState<ConfigRecord | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/configurations")
@@ -35,10 +37,12 @@ export default function ConfigHistoryList() {
       .then(data => {
         const role = data?.user?.user_type ?? null;
         setIsAdmin(role === "admin");
+        const userEmail = data?.user?.email ?? null;
+        setUserEmail(userEmail);
       })
       .catch(() => {});
   }, []);
-
+  // console.log("User email:", userEmail);
   if (loading) return <p className="text-slate-400">Loading history…</p>;
 
   if (!configs.length)
@@ -63,7 +67,7 @@ export default function ConfigHistoryList() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-white">
-                Build #{item.id}
+                {isAdmin ? item.userEmail : `Build #${item.id}`}
               </h2>
               <p className="text-sm text-slate-400">
                 {new Date(item.createdAt).toLocaleString()}
@@ -189,6 +193,10 @@ export default function ConfigHistoryList() {
                     <td className="py-2 pr-4 font-medium text-slate-200">Status</td>
                     <td className="py-2 text-slate-300">{selected.status ?? "-"}</td>
                   </tr>
+                    <tr className="border-t border-slate-800">
+                    <td className="py-2 pr-4 font-medium text-slate-200">User Email</td>
+                    <td className="py-2 text-slate-300">{userEmail ?? "—"}</td>
+                    </tr>
                 </tbody>
               </table>
             </div>
