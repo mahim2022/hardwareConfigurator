@@ -151,6 +151,8 @@ const RequirementForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pcImage, setPcImage] = useState<{ url: string; title: string; source: string } | null>(null);
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
 
   const handleSoftwareToggle = (value: string) => {
     setForm((prev) => {
@@ -200,6 +202,34 @@ const RequirementForm = () => {
       const data = await response.json();
       
       setResult(data);
+
+      // Fetch PC image if pcName is available
+      if (data.aiSummary?.pcName) {
+        setIsLoadingImage(true);
+        try {
+          const imageResponse = await fetch(
+            `/api/search-image?q=${encodeURIComponent(data.aiSummary.pcName)}`
+          );
+          const imageData = await imageResponse.json();
+          
+          if (imageData.imageUrl) {
+            setPcImage({
+              url: imageData.imageUrl,
+              title: imageData.title || data.aiSummary.pcName,
+              source: imageData.source || "Search",
+            });
+          } else {
+            setPcImage(null);
+          }
+        } catch (imgError) {
+          console.error("Failed to fetch PC image:", imgError);
+          setPcImage(null);
+        } finally {
+          setIsLoadingImage(false);
+        }
+      } else {
+        setPcImage(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate configuration");
     } finally {
@@ -479,11 +509,37 @@ const RequirementForm = () => {
 
         {result && (
           <div className="space-y-4">
-            {/* PC Name - Prominent Display */}
+            {/* PC Name - Prominent Display with Image */}
             {result.aiSummary?.pcName && (
               <div className="rounded-2xl border-2 border-emerald-500/60 bg-linear-to-r from-emerald-500/15 to-cyan-500/10 p-6 shadow-lg shadow-emerald-500/20">
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Recommended System</p>
-                <p className="mt-3 text-3xl font-bold text-emerald-100">{result.aiSummary.pcName}</p>
+                <div className="grid gap-6 md:grid-cols-[1fr_auto]">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Recommended System</p>
+                    <p className="mt-3 text-3xl font-bold text-emerald-100">{result.aiSummary.pcName}</p>
+                  </div>
+                  
+                  {/* PC Image */}
+                  <div className="flex items-center justify-center">
+                    {isLoadingImage ? (
+                      <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-emerald-500/30 bg-slate-900/50">
+                        <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500/30 border-t-emerald-500"></div>
+                      </div>
+                    ) : pcImage?.url ? (
+                      <div className="group relative">
+                        <img
+                          src={pcImage.url}
+                          alt={pcImage.title}
+                          className="h-32 w-32 rounded-xl border-2 border-emerald-500/40 bg-white object-contain p-2 shadow-xl transition-transform group-hover:scale-105"
+                        />
+                        <p className="mt-2 text-center text-xs text-emerald-300/70">{pcImage.source}</p>
+                      </div>
+                    ) : (
+                      <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-emerald-500/30 bg-slate-900/30">
+                        <p className="text-center text-xs text-slate-400">No image<br />available</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 

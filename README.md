@@ -20,13 +20,16 @@ Visit `http://localhost:3000` to use the requirement form UI.
 
 ### Environment variables
 
-Copy `env.sample` to `.env.local` and add your OpenRouter key:
+Copy `env.sample` to `.env.local` and add your API keys:
 
 ```
 OPENROUTER_API_KEY=sk-or-xxxxxxxx
+SERPAPI_KEY=your_serpapi_key_here
 ```
 
-Without the key, the UI still shows the rule-based baseline, but AI reasoning is disabled.
+**OpenRouter API Key**: Without this key, the UI still shows the rule-based baseline, but AI reasoning is disabled.
+
+**SerpApi Key**: Required for displaying product images. Get your free API key at [serpapi.com](https://serpapi.com/). Without this key, the system works but won't display PC images.
 
 ## API Route (Hoppscotch-ready)
 
