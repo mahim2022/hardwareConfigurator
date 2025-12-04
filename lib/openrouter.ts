@@ -1,12 +1,48 @@
 import type { RequirementsPayload } from "./rules";
 
 export type AiSummary = {
-  bestFitConfiguration: string;
-  priceEstimate: string;
+  // Core Components
+  cpu: string;
+  cpuCores?: string;
+  cpuThreads?: string;
+  cpuCache?: string;
+  cpuFrequency?: string;
+  gpu: string;
+  ram: string;
+  ramSlots?: string;
+  ramSpeed?: string;
+  storage: string;
+  nvmeSlots?: string;
+  
+  // Power & Battery
+  powerSupply?: string;
+  batteryInfo?: string;
+  
+  // Display & Peripherals
+  screen?: string;
+  webcam?: string;
+  ioPorts?: string;
+  
+  // System Components
+  motherboard?: string;
+  coolingSystem?: string;
+  
+  // Features & Specs
+  audioFeatures?: string;
+  networkFeatures?: string;
+  size?: string;
+  weight?: string;
+  upgradability?: string;
+  
+  // Optional Device
+  model?: string;
+  pcName?: string;
+  
+  // Pricing & Analysis
   unitPrice: string;
-  totalPrice: string;
-  reasoning: string;
   bulkScaling: string;
+  upsRecommendation?: string;
+  printerScannerRecommendation?: string;
 };
 
 const OPENROUTER_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -127,7 +163,7 @@ export const getOpenRouterSummary = async (
 
   for (const model of models) {
     try {
-      console.log("Trying model:", model);
+      // console.log("Trying model:", model);
 
       const response = await fetch(OPENROUTER_COMPLETIONS_URL, {
         method: "POST",
@@ -145,7 +181,7 @@ export const getOpenRouterSummary = async (
             {
               role: "system",
               content:
-                "return strict JSON with snake_case keys exactly as follows: {\"best_fit_configuration\": string, \"price_estimate\": string, \"unit_price\": string, \"total_price\": string, \"reasoning\": string, \"bulk_scaling\": string}",
+                "return strict JSON with snake_case keys. Required: {\"cpu\": string, \"gpu\": string, \"ram\": string, \"storage\": string, \"unit_price\": string, \"bulk_scaling\": string}. Optional: {\"cpu_cores\": string, \"cpu_threads\": string, \"cpu_cache\": string, \"cpu_frequency\": string, \"ram_slots\": string, \"ram_speed\": string, \"nvme_slots\": string, \"power_supply\": string, \"battery_info\": string, \"screen\": string, \"webcam\": string, \"io_ports\": string, \"motherboard\": string, \"cooling_system\": string, \"audio_features\": string, \"network_features\": string, \"size\": string, \"weight\": string, \"upgradability\": string, \"model\": string, \"pc_name\": string (name/model of PC or laptop), \"ups_recommendation\": string (if includeUps), \"printer_scanner_recommendation\": string (if includePrinterScanner)}",
             },
             {
               role: "user",
@@ -173,15 +209,38 @@ export const getOpenRouterSummary = async (
         .trim();
 
       const parsed = JSON.parse(cleaned);
-
+      // console.log(parsed);
       // SUCCESS → return immediately
       return {
-        bestFitConfiguration: parsed.best_fit_configuration || "",
-        priceEstimate: parsed.price_estimate || "",
-        unitPrice: parsed.unit_price || parsed.price_estimate || "Price on request",
-        totalPrice: parsed.total_price || "Price on request",
-        reasoning: parsed.reasoning || "",
+        cpu: parsed.cpu || "",
+        cpuCores: parsed.cpu_cores || undefined,
+        cpuThreads: parsed.cpu_threads || undefined,
+        cpuCache: parsed.cpu_cache || undefined,
+        cpuFrequency: parsed.cpu_frequency || undefined,
+        gpu: parsed.gpu || "",
+        ram: parsed.ram || "",
+        ramSlots: parsed.ram_slots || undefined,
+        ramSpeed: parsed.ram_speed || undefined,
+        storage: parsed.storage || "",
+        nvmeSlots: parsed.nvme_slots || undefined,
+        powerSupply: parsed.power_supply || undefined,
+        batteryInfo: parsed.battery_info || undefined,
+        screen: parsed.screen || undefined,
+        webcam: parsed.webcam || undefined,
+        ioPorts: parsed.io_ports || undefined,
+        motherboard: parsed.motherboard || undefined,
+        coolingSystem: parsed.cooling_system || undefined,
+        audioFeatures: parsed.audio_features || undefined,
+        networkFeatures: parsed.network_features || undefined,
+        size: parsed.size || undefined,
+        weight: parsed.weight || undefined,
+        upgradability: parsed.upgradability || undefined,
+        model: parsed.model || undefined,
+        pcName: parsed.pc_name || undefined,
+        unitPrice: parsed.unit_price || "Price on request",
         bulkScaling: parsed.bulk_scaling || "",
+        upsRecommendation: parsed.ups_recommendation || undefined,
+        printerScannerRecommendation: parsed.printer_scanner_recommendation || undefined,
       };
     } catch (err) {
       console.error(`Model failed (${model}):`, err);

@@ -145,6 +145,8 @@ const normalizeBody = (body: unknown): RequirementsPayload => {
     warrantyPreferences: String(source.warrantyPreferences ?? ""),
     powerPreferences: String(source.powerPreferences ?? ""),
     complianceNotes: String(source.complianceNotes ?? ""),
+    includeUps: Boolean(source.includeUps),
+    includePrinterScanner: Boolean(source.includePrinterScanner),
   };
 };
 
@@ -210,24 +212,18 @@ const decoded = decodedRaw as { userId: number; email: string };
 
       baselineSpec = deriveBaselineSpec(normalized);
 
-      // 🔄 Convert baseline → AiSummary shape
+      // 🔄 Convert baseline → AiSummary shape with component-level specs
       aiSummary = {
-        bestFitConfiguration: `
-CPU: ${baselineSpec.cpu}
-GPU: ${baselineSpec.gpu}
-RAM: ${baselineSpec.ram}
-Storage: ${baselineSpec.storage}
-Networking: ${baselineSpec.networking}
-Display: ${baselineSpec.display}
-Accessories: ${(baselineSpec.accessories ?? []).join(", ")}
-Recommended Vendors: ${baselineSpec.recommendedVendors.join(", ")}
-        `.trim(),
-
-        priceEstimate: baselineSpec.estimatedUnitPrice,
+        cpu: baselineSpec.cpu,
+        gpu: baselineSpec.gpu,
+        ram: baselineSpec.ram,
+        storage: baselineSpec.storage,
+        model: normalized.formFactor === "laptop" ? "Baseline model recommendation" : undefined,
+        pcName: "Baseline system recommendation",
         unitPrice: baselineSpec.estimatedUnitPrice,
-        totalPrice: "Calculated based on quantity",
-        reasoning: baselineSpec.notes.join(" "),
         bulkScaling: "Baseline logic — no AI scaling notes",
+        upsRecommendation: normalized.includeUps ? "Standard 1000VA UPS for power backup" : undefined,
+        printerScannerRecommendation: normalized.includePrinterScanner ? "Network multifunction printer/scanner with wireless capabilities" : undefined,
       };
     }
 
@@ -235,30 +231,62 @@ Recommended Vendors: ${baselineSpec.recommendedVendors.join(", ")}
     // 🗄️ Store to DB
     // ============================
 
+    const componentSpec = {
+      // Core Components
+      cpu: aiSummary.cpu,
+      cpuCores: aiSummary.cpuCores,
+      cpuThreads: aiSummary.cpuThreads,
+      cpuCache: aiSummary.cpuCache,
+      cpuFrequency: aiSummary.cpuFrequency,
+      gpu: aiSummary.gpu,
+      ram: aiSummary.ram,
+      ramSlots: aiSummary.ramSlots,
+      ramSpeed: aiSummary.ramSpeed,
+      storage: aiSummary.storage,
+      nvmeSlots: aiSummary.nvmeSlots,
+      
+      // Power & Battery
+      powerSupply: aiSummary.powerSupply,
+      batteryInfo: aiSummary.batteryInfo,
+      
+      // Display & Peripherals
+      screen: aiSummary.screen,
+      webcam: aiSummary.webcam,
+      ioPorts: aiSummary.ioPorts,
+      
+      // System Components
+      motherboard: aiSummary.motherboard,
+      coolingSystem: aiSummary.coolingSystem,
+      
+      // Features & Specs
+      audioFeatures: aiSummary.audioFeatures,
+      networkFeatures: aiSummary.networkFeatures,
+      size: aiSummary.size,
+      weight: aiSummary.weight,
+      upgradability: aiSummary.upgradability,
+      
+      // Optional Device
+      model: aiSummary.model,
+    };
+
     const insertQuery = `
       INSERT INTO configurations (
         user_id,
         requirements,
         best_fit_configuration,
-        price_estimate,
         unit_price,
-        total_price,
-        reasoning,
         bulk_scaling,
         used_ai
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      VALUES ($1,$2,$3,$4,$5,$6)
       RETURNING *;
     `;
 
     const values = [
       decoded.userId,
       JSON.stringify(normalized),
-      aiSummary.bestFitConfiguration,
-      aiSummary.priceEstimate,
+      JSON.stringify(componentSpec),
       aiSummary.unitPrice,
-      aiSummary.totalPrice,
-      aiSummary.reasoning,
       aiSummary.bulkScaling,
       !useBaselineFallback, // true = AI used, false = baseline fallback
     ];

@@ -33,11 +33,27 @@ export async function initDB() {
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         name VARCHAR(255),
+        user_type VARCHAR(50) DEFAULT 'user',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log("Users table initialized");
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS configurations (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        requirements JSONB NOT NULL,
+        best_fit_configuration JSONB,
+        unit_price VARCHAR(255),
+        bulk_scaling TEXT,
+        used_ai BOOLEAN DEFAULT FALSE,
+        status VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log("Configurations table initialized");
   } catch (error) {
     console.error("DB init error:", error);
   }

@@ -30,10 +30,7 @@ export async function GET(_req: Request, context: { params: Promise<{ id: string
         id,
         requirements,
         best_fit_configuration AS "bestFitConfiguration",
-        price_estimate AS "priceEstimate",
         unit_price AS "unitPrice",
-        total_price AS "totalPrice",
-        reasoning,
         bulk_scaling AS "bulkScaling",
         used_ai AS "usedAi",
         created_at AS "createdAt"

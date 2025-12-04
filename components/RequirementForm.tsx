@@ -91,6 +91,8 @@ type FormState = {
   powerPreferences: string;
   complianceNotes: string;
   customSoftware: string;
+  includeUps: boolean;
+  includePrinterScanner: boolean;
 };
 
 type ApiResponse = {
@@ -116,6 +118,8 @@ const initialState: FormState = {
   powerPreferences: "80Plus Platinum",
   complianceNotes: "TPM 2.0",
   customSoftware: "",
+  includeUps: false,
+  includePrinterScanner: false,
 };
 
 const Field = ({
@@ -160,7 +164,7 @@ const RequirementForm = () => {
     });
   };
 
-  const handleChange = (field: keyof FormState, value: string | string[]) => {
+  const handleChange = (field: keyof FormState, value: string | string[] | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -194,6 +198,7 @@ const RequirementForm = () => {
       }
 
       const data = await response.json();
+      
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate configuration");
@@ -201,9 +206,8 @@ const RequirementForm = () => {
       setIsSubmitting(false);
     }
   };
-  console.log(result?.aiSummary?.bestFitConfiguration)
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+    <div className="grid gap-8 lg:grid-cols-1">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-3">
           <Badge label="Input Layer" />
@@ -413,6 +417,29 @@ const RequirementForm = () => {
           </Field>
         </div>
 
+        <Field label="Peripherals & Accessories">
+          <div className="flex flex-col gap-3">
+            <label className="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-950/40 p-3 text-sm text-slate-200">
+              <input
+                type="checkbox"
+                checked={form.includeUps}
+                onChange={() => handleChange("includeUps", !form.includeUps)}
+                className="size-4 rounded border-slate-500 bg-transparent"
+              />
+              UPS (Uninterruptible Power Supply)
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-950/40 p-3 text-sm text-slate-200">
+              <input
+                type="checkbox"
+                checked={form.includePrinterScanner}
+                onChange={() => handleChange("includePrinterScanner", !form.includePrinterScanner)}
+                className="size-4 rounded border-slate-500 bg-transparent"
+              />
+              Printer & Scanner
+            </label>
+          </div>
+        </Field>
+
         <button
           type="submit"
           disabled={isSubmitting}
@@ -452,6 +479,14 @@ const RequirementForm = () => {
 
         {result && (
           <div className="space-y-4">
+            {/* PC Name - Prominent Display */}
+            {result.aiSummary?.pcName && (
+              <div className="rounded-2xl border-2 border-emerald-500/60 bg-linear-to-r from-emerald-500/15 to-cyan-500/10 p-6 shadow-lg shadow-emerald-500/20">
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Recommended System</p>
+                <p className="mt-3 text-3xl font-bold text-emerald-100">{result.aiSummary.pcName}</p>
+              </div>
+            )}
+
             {/* Only show baseline spec if AI failed and we're using fallback */}
             {result.useBaselineFallback && result.baselineSpec && (
               <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
@@ -502,37 +537,178 @@ const RequirementForm = () => {
 
                 {/* Configuration Summary Table */}
                 <div className="space-y-4">
-                  {/* Best Fit Configuration - Large & Prominent */}
-                  <div className="rounded-xl border-2 border-emerald-500/50 bg-linear-to-b from-emerald-500/15 to-emerald-600/5 p-6 shadow-lg shadow-emerald-500/10">
-                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-300 mb-2">Best Fit</p>
-                    <p className="text-2xl font-bold text-emerald-100 leading-snug">{result.aiSummary.bestFitConfiguration}</p>
-                  </div>
-
-                  {/* Price Details - Toned Down */}
-                  <div className="overflow-hidden rounded-xl border border-slate-700/40 bg-slate-900/30">
-                    <table className="w-full text-xs">
+                  {/* Component Specifications Table */}
+                  <div className="overflow-hidden rounded-xl border border-emerald-500/40 bg-slate-900/30">
+                    <table className="w-full text-sm">
                       <tbody>
-                        <tr className="border-b border-slate-700/30">
-                          <td className="px-4 py-2 font-medium text-slate-400">Unit price</td>
-                          <td className="px-4 py-2 text-slate-300">{result.aiSummary.unitPrice}</td>
+                        {/* Core Components */}
+                        <tr className="border-b border-slate-700/40">
+                          <td className="px-4 py-3 font-semibold text-slate-300">CPU</td>
+                          <td className="px-4 py-3 text-emerald-100">{result.aiSummary.cpu}</td>
                         </tr>
-                        <tr>
-                          <td className="px-4 py-2 font-medium text-slate-400">Price breakdown</td>
-                          <td className="px-4 py-2 text-slate-300">{result.aiSummary.priceEstimate}</td>
+                        {result.aiSummary.cpuCores && (
+                          <tr className="border-b border-slate-700/40 bg-slate-900/20 text-xs">
+                            <td className="px-4 py-2 text-slate-400">Cores/Threads</td>
+                            <td className="px-4 py-2 text-slate-300">{result.aiSummary.cpuCores} / {result.aiSummary.cpuThreads || "—"}</td>
+                          </tr>
+                        )}
+                        {result.aiSummary.cpuCache && (
+                          <tr className="border-b border-slate-700/40 bg-slate-900/20 text-xs">
+                            <td className="px-4 py-2 text-slate-400">Cache/Frequency</td>
+                            <td className="px-4 py-2 text-slate-300">{result.aiSummary.cpuCache} / {result.aiSummary.cpuFrequency || "—"}</td>
+                          </tr>
+                        )}
+                        <tr className="border-b border-slate-700/40 bg-slate-900/20">
+                          <td className="px-4 py-3 font-semibold text-slate-300">GPU</td>
+                          <td className="px-4 py-3 text-emerald-100">{result.aiSummary.gpu}</td>
                         </tr>
+                        <tr className="border-b border-slate-700/40">
+                          <td className="px-4 py-3 font-semibold text-slate-300">RAM</td>
+                          <td className="px-4 py-3 text-emerald-100">{result.aiSummary.ram}</td>
+                        </tr>
+                        {result.aiSummary.ramSlots && (
+                          <tr className="border-b border-slate-700/40 bg-slate-900/20 text-xs">
+                            <td className="px-4 py-2 text-slate-400">RAM Slots/Speed</td>
+                            <td className="px-4 py-2 text-slate-300">{result.aiSummary.ramSlots} / {result.aiSummary.ramSpeed || "—"}</td>
+                          </tr>
+                        )}
+                        <tr className="border-b border-slate-700/40 bg-slate-900/20">
+                          <td className="px-4 py-3 font-semibold text-slate-300">Storage</td>
+                          <td className="px-4 py-3 text-emerald-100">{result.aiSummary.storage}</td>
+                        </tr>
+                        {result.aiSummary.nvmeSlots && (
+                          <tr className="border-b border-slate-700/40 text-xs">
+                            <td className="px-4 py-2 text-slate-400">NVMe Slots</td>
+                            <td className="px-4 py-2 text-slate-300">{result.aiSummary.nvmeSlots}</td>
+                          </tr>
+                        )}
+
+                        {/* Power & Battery */}
+                        {result.aiSummary.powerSupply && (
+                          <tr className="border-b border-slate-700/40 bg-slate-900/20">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Power Supply</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.powerSupply}</td>
+                          </tr>
+                        )}
+                        {result.aiSummary.batteryInfo && (
+                          <tr className="border-b border-slate-700/40">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Battery</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.batteryInfo}</td>
+                          </tr>
+                        )}
+
+                        {/* Display & I/O */}
+                        {result.aiSummary.screen && (
+                          <tr className="border-b border-slate-700/40 bg-slate-900/20">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Display</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.screen}</td>
+                          </tr>
+                        )}
+                        {result.aiSummary.ioPorts && (
+                          <tr className="border-b border-slate-700/40">
+                            <td className="px-4 py-3 font-semibold text-slate-300">I/O Ports</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.ioPorts}</td>
+                          </tr>
+                        )}
+                        {result.aiSummary.webcam && (
+                          <tr className="border-b border-slate-700/40 bg-slate-900/20">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Webcam</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.webcam}</td>
+                          </tr>
+                        )}
+
+                        {/* System Components */}
+                        {result.aiSummary.motherboard && (
+                          <tr className="border-b border-slate-700/40">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Motherboard</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.motherboard}</td>
+                          </tr>
+                        )}
+                        {result.aiSummary.coolingSystem && (
+                          <tr className="border-b border-slate-700/40 bg-slate-900/20">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Cooling</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.coolingSystem}</td>
+                          </tr>
+                        )}
+
+                        {/* Features */}
+                        {result.aiSummary.audioFeatures && (
+                          <tr className="border-b border-slate-700/40">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Audio</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.audioFeatures}</td>
+                          </tr>
+                        )}
+                        {result.aiSummary.networkFeatures && (
+                          <tr className="border-b border-slate-700/40 bg-slate-900/20">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Networking</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.networkFeatures}</td>
+                          </tr>
+                        )}
+
+                        {/* Physical Specs */}
+                        {result.aiSummary.size && (
+                          <tr className="border-b border-slate-700/40">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Size</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.size}</td>
+                          </tr>
+                        )}
+                        {result.aiSummary.weight && (
+                          <tr className="border-b border-slate-700/40 bg-slate-900/20">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Weight</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.weight}</td>
+                          </tr>
+                        )}
+                        {result.aiSummary.upgradability && (
+                          <tr className="border-b border-slate-700/40">
+                            <td className="px-4 py-3 font-semibold text-slate-300">Upgradability</td>
+                            <td className="px-4 py-3 text-slate-300">{result.aiSummary.upgradability}</td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
                 </div>
 
-                {/* Reasoning - Eye Catching */}
-                <div className="rounded-xl border-2 border-amber-500/50 bg-linear-to-r from-amber-500/10 to-amber-600/5 p-4 shadow-lg shadow-amber-500/10">
-                  <div className="flex items-start gap-3">
-                    <div className="text-xl">💡</div>
-                    <div className="flex-1">
-                      <p className="text-xs font-bold uppercase tracking-widest text-amber-300">Strategic Reasoning</p>
-                      <p className="mt-2 text-sm leading-relaxed text-amber-50">{result.aiSummary.reasoning}</p>
+                {/* Pricing Information */}
+                <div className="rounded-xl border-2 border-emerald-500/50 bg-linear-to-r from-emerald-500/10 to-teal-600/5 p-5 shadow-lg shadow-emerald-500/10">
+                  <h5 className="text-xs font-bold uppercase tracking-widest text-emerald-300 mb-3">Pricing Breakdown</h5>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-300">Unit Price:</span>
+                      <span className="text-xl font-bold text-emerald-100">{result.aiSummary.unitPrice}</span>
                     </div>
+                    <div className="flex items-center justify-between text-sm border-t border-emerald-500/20 pt-3">
+                      <span className="text-slate-300">Quantity:</span>
+                      <span className="font-semibold text-emerald-100">{result.requirements.quantity} units</span>
+                    </div>
+                    {(() => {
+                      const unitPriceStr = result.aiSummary.unitPrice.replace(/[^0-9.]/g, '');
+                      const unitPriceNum = parseFloat(unitPriceStr);
+                      
+                      if (!isNaN(unitPriceNum)) {
+                        // Parse quantity range and calculate
+                        const qty = result.requirements.quantity;
+                        let estimatedQty = 1;
+                        
+                        if (qty === "1") estimatedQty = 1;
+                        else if (qty === "5-20") estimatedQty = 12;
+                        else if (qty === "20-50") estimatedQty = 35;
+                        else if (qty === "50-200") estimatedQty = 125;
+                        else if (qty === "200+") estimatedQty = 250;
+                        
+                        const totalPrice = unitPriceNum * estimatedQty;
+                        
+                        return (
+                          <div className="flex items-center justify-between text-base border-t-2 border-emerald-500/30 pt-3">
+                            <span className="font-semibold text-emerald-200">Estimated Total:</span>
+                            <span className="text-2xl font-bold text-emerald-100">
+                              ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
 
@@ -546,6 +722,32 @@ const RequirementForm = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* UPS Recommendation */}
+                {result.aiSummary.upsRecommendation && (
+                  <div className="rounded-xl border-2 border-cyan-500/50 bg-linear-to-r from-cyan-500/10 to-blue-600/5 p-4 shadow-lg shadow-cyan-500/10">
+                    <div className="flex items-start gap-3">
+                      <div className="text-xl">🔋</div>
+                      <div className="flex-1">
+                        <p className="text-xs font-bold uppercase tracking-widest text-cyan-300">UPS Recommendation</p>
+                        <p className="mt-2 text-sm leading-relaxed text-cyan-50">{result.aiSummary.upsRecommendation}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Printer & Scanner Recommendation */}
+                {result.aiSummary.printerScannerRecommendation && (
+                  <div className="rounded-xl border-2 border-indigo-500/50 bg-linear-to-r from-indigo-500/10 to-pink-600/5 p-4 shadow-lg shadow-indigo-500/10">
+                    <div className="flex items-start gap-3">
+                      <div className="text-xl">🖨️</div>
+                      <div className="flex-1">
+                        <p className="text-xs font-bold uppercase tracking-widest text-indigo-300">Printer & Scanner</p>
+                        <p className="mt-2 text-sm leading-relaxed text-indigo-50">{result.aiSummary.printerScannerRecommendation}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {/* Alternatives removed: no longer requested from OpenRouter */}
               </div>
             ) : !result.useBaselineFallback ? (

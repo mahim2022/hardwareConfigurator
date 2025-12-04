@@ -21,6 +21,8 @@ export type RequirementsPayload = {
   warrantyPreferences?: string;
   powerPreferences?: string;
   complianceNotes?: string;
+  includeUps?: boolean;
+  includePrinterScanner?: boolean;
 };
 
 export type BaselineSpec = {
