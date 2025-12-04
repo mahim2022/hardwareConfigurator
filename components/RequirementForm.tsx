@@ -152,7 +152,11 @@ const RequirementForm = () => {
   const [result, setResult] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pcImage, setPcImage] = useState<{ url: string; title: string; source: string } | null>(null);
+  const [cpuImage, setCpuImage] = useState<{ url: string; title: string; source: string } | null>(null);
+  const [gpuImage, setGpuImage] = useState<{ url: string; title: string; source: string } | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
+  const [isLoadingCpuImage, setIsLoadingCpuImage] = useState(false);
+  const [isLoadingGpuImage, setIsLoadingGpuImage] = useState(false);
 
   const handleSoftwareToggle = (value: string) => {
     setForm((prev) => {
@@ -175,6 +179,9 @@ const RequirementForm = () => {
     setIsSubmitting(true);
     setError(null);
     setResult(null);
+    setPcImage(null);
+    setCpuImage(null);
+    setGpuImage(null);
 
     const payload = {
       ...form,
@@ -203,7 +210,8 @@ const RequirementForm = () => {
       
       setResult(data);
 
-      // Fetch PC image if pcName is available
+      // Fetch images for PC, CPU, and GPU if available
+      // PC Image
       if (data.aiSummary?.pcName) {
         setIsLoadingImage(true);
         try {
@@ -211,7 +219,6 @@ const RequirementForm = () => {
             `/api/search-image?q=${encodeURIComponent(data.aiSummary.pcName)}`
           );
           const imageData = await imageResponse.json();
-          
           if (imageData.imageUrl) {
             setPcImage({
               url: imageData.imageUrl,
@@ -229,6 +236,66 @@ const RequirementForm = () => {
         }
       } else {
         setPcImage(null);
+      }
+
+      // CPU Image
+      if (data.aiSummary?.cpu) {
+        // console.log("Fetching CPU image for:", data.aiSummary.cpu);
+        setIsLoadingCpuImage(true);
+        try {
+          const cpuQuery = `${data.aiSummary.cpu} processor`;
+          const cpuImageResponse = await fetch(
+            `/api/search-image?q=${encodeURIComponent(cpuQuery)}`
+          );
+          // const cpuImageResponse = await fetch(
+          //   `/api/search-image?q=${encodeURIComponent(data.aiSummary.cpu)}`
+          // );
+          const cpuImageData = await cpuImageResponse.json();
+          if (cpuImageData.imageUrl) {
+            setCpuImage({
+              url: cpuImageData.imageUrl,
+              title: cpuImageData.title || data.aiSummary.cpu,
+              source: cpuImageData.source || "Search",
+            });
+          } else {
+            setCpuImage(null);
+          }
+        } catch (imgError) {
+          console.error("Failed to fetch CPU image:", imgError);
+          setCpuImage(null);
+        } finally {
+          setIsLoadingCpuImage(false);
+        }
+      } else {
+        setCpuImage(null);
+      }
+
+      // GPU Image
+      if (data.aiSummary?.gpu) {
+        // console.log("Fetching GPU image for:", data.aiSummary.gpu);
+        setIsLoadingGpuImage(true);
+        try {
+          const gpuImageResponse = await fetch(
+            `/api/search-image?q=${encodeURIComponent(data.aiSummary.gpu)}`
+          );
+          const gpuImageData = await gpuImageResponse.json();
+          if (gpuImageData.imageUrl) {
+            setGpuImage({
+              url: gpuImageData.imageUrl,
+              title: gpuImageData.title || data.aiSummary.gpu,
+              source: gpuImageData.source || "Search",
+            });
+          } else {
+            setGpuImage(null);
+          }
+        } catch (imgError) {
+          console.error("Failed to fetch GPU image:", imgError);
+          setGpuImage(null);
+        } finally {
+          setIsLoadingGpuImage(false);
+        }
+      } else {
+        setGpuImage(null);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate configuration");
@@ -509,35 +576,83 @@ const RequirementForm = () => {
 
         {result && (
           <div className="space-y-4">
-            {/* PC Name - Prominent Display with Image */}
+            {/* PC Name - Prominent Display with Large Images */}
             {result.aiSummary?.pcName && (
-              <div className="rounded-2xl border-2 border-emerald-500/60 bg-linear-to-r from-emerald-500/15 to-cyan-500/10 p-6 shadow-lg shadow-emerald-500/20">
-                <div className="grid gap-6 md:grid-cols-[1fr_auto]">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Recommended System</p>
-                    <p className="mt-3 text-3xl font-bold text-emerald-100">{result.aiSummary.pcName}</p>
+              <div className="rounded-3xl border-2 border-emerald-500/60 bg-linear-to-r from-emerald-500/15 to-cyan-500/10 p-8 shadow-lg shadow-emerald-500/20">
+                <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
+                  {/* Images Section */}
+                  <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
+                    {/* PC Image */}
+                    <div className="flex flex-col items-center">
+                      <span className="text-xs font-semibold text-emerald-300 mb-2">System</span>
+                      {isLoadingImage ? (
+                        <div className="flex h-64 w-64 items-center justify-center rounded-2xl border border-emerald-500/30 bg-slate-900/50">
+                          <div className="h-12 w-12 animate-spin rounded-full border-2 border-emerald-500/30 border-t-emerald-500"></div>
+                        </div>
+                      ) : pcImage?.url ? (
+                        <div className="group relative">
+                          <img
+                            src={pcImage.url}
+                            alt={pcImage.title}
+                            className="h-64 w-64 rounded-2xl border-2 border-emerald-500/40 bg-white object-contain p-4 shadow-xl transition-transform group-hover:scale-105"
+                          />
+                          {/* <p className="mt-2 text-center text-xs text-emerald-300/70">{pcImage.source}</p> */}
+                        </div>
+                      ) : (
+                        <div className="flex h-64 w-64 items-center justify-center rounded-2xl border border-dashed border-emerald-500/30 bg-slate-900/30">
+                          <p className="text-center text-xs text-slate-400">No image<br />available</p>
+                        </div>
+                      )}
+                    </div>
+                    {/* CPU Image */}
+                    <div className="flex flex-col items-center">
+                      <span className="text-xs font-semibold text-cyan-300 mb-2">CPU</span>
+                      {isLoadingCpuImage ? (
+                        <div className="flex h-64 w-64 items-center justify-center rounded-2xl border border-cyan-500/30 bg-slate-900/50">
+                          <div className="h-12 w-12 animate-spin rounded-full border-2 border-cyan-500/30 border-t-cyan-500"></div>
+                        </div>
+                      ) : cpuImage?.url ? (
+                        <div className="group relative">
+                          <img
+                            src={cpuImage.url}
+                            alt={cpuImage.title}
+                            className="h-64 w-64 rounded-2xl border-2 border-cyan-500/40 bg-white object-contain p-4 shadow-xl transition-transform group-hover:scale-105"
+                          />
+                          {/* <p className="mt-2 text-center text-xs text-cyan-300/70">{cpuImage.source}</p> */}
+                        </div>
+                      ) : (
+                        <div className="flex h-64 w-64 items-center justify-center rounded-2xl border border-dashed border-cyan-500/30 bg-slate-900/30">
+                          <p className="text-center text-xs text-slate-400">No image<br />available</p>
+                        </div>
+                      )}
+                    </div>
+                    {/* GPU Image */}
+                    <div className="flex flex-col items-center">
+                      <span className="text-xs font-semibold text-indigo-300 mb-2">GPU</span>
+                      {isLoadingGpuImage ? (
+                        <div className="flex h-64 w-64 items-center justify-center rounded-2xl border border-indigo-500/30 bg-slate-900/50">
+                          <div className="h-12 w-12 animate-spin rounded-full border-2 border-indigo-500/30 border-t-indigo-500"></div>
+                        </div>
+                      ) : gpuImage?.url ? (
+                        <div className="group relative">
+                          <img
+                            src={gpuImage.url}
+                            alt={gpuImage.title}
+                            className="h-64 w-64 rounded-2xl border-2 border-indigo-500/40 bg-white object-contain p-4 shadow-xl transition-transform group-hover:scale-105"
+                          />
+                          {/* <p className="mt-2 text-center text-xs text-indigo-300/70">{gpuImage.source}</p> */}
+                        </div>
+                      ) : (
+                        <div className="flex h-64 w-64 items-center justify-center rounded-2xl border border-dashed border-indigo-500/30 bg-slate-900/30">
+                          <p className="text-center text-xs text-slate-400">No image<br />available</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  
-                  {/* PC Image */}
-                  <div className="flex items-center justify-center">
-                    {isLoadingImage ? (
-                      <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-emerald-500/30 bg-slate-900/50">
-                        <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500/30 border-t-emerald-500"></div>
-                      </div>
-                    ) : pcImage?.url ? (
-                      <div className="group relative">
-                        <img
-                          src={pcImage.url}
-                          alt={pcImage.title}
-                          className="h-32 w-32 rounded-xl border-2 border-emerald-500/40 bg-white object-contain p-2 shadow-xl transition-transform group-hover:scale-105"
-                        />
-                        <p className="mt-2 text-center text-xs text-emerald-300/70">{pcImage.source}</p>
-                      </div>
-                    ) : (
-                      <div className="flex h-32 w-32 items-center justify-center rounded-xl border border-dashed border-emerald-500/30 bg-slate-900/30">
-                        <p className="text-center text-xs text-slate-400">No image<br />available</p>
-                      </div>
-                    )}
+                  {/* System Name Section */}
+                  <div className="flex flex-col items-center justify-center">
+                    <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Recommended System</p>
+                    <p className="mt-3 text-4xl font-bold text-emerald-100">{result.aiSummary.pcName}</p>
                   </div>
                 </div>
               </div>
