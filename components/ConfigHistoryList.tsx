@@ -90,7 +90,7 @@ export default function ConfigHistoryList() {
           key={item.id}
           className="block rounded-xl border border-slate-800 bg-slate-900/40 p-6 shadow-lg shadow-black/10 transition hover:border-emerald-500/40 hover:bg-slate-900/60 cursor-pointer"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-white">
                 {isAdmin ? item.userEmail : `Build #${item.id}`}
@@ -114,7 +114,7 @@ export default function ConfigHistoryList() {
             </div>
 
             <span
-              className={`rounded-md px-3 py-1 text-xs font-semibold ${
+              className={`self-start rounded-md px-3 py-1 text-xs font-semibold sm:self-auto ${
                 item.usedAi
                   ? "bg-emerald-500/20 text-emerald-300"
                   : "bg-yellow-500/20 text-yellow-300"
@@ -139,12 +139,12 @@ export default function ConfigHistoryList() {
 
       {/* Modal / drawer for selected config */}
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 overflow-y-auto">
           <div className="absolute inset-0 bg-black/60" onClick={() => setSelected(null)} />
-          <div className="relative w-full max-w-4xl max-h-[90vh] rounded-lg bg-slate-900/95 shadow-lg my-8 flex flex-col">
-            <div className="flex items-start justify-between p-6 border-b border-slate-800">
+          <div className="relative w-full max-w-full sm:max-w-4xl h-[90vh] sm:h-auto max-h-[90vh] rounded-t-2xl bg-slate-900/95 shadow-2xl my-0 sm:my-8 flex flex-col sm:rounded-lg">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between p-6 border-b border-slate-800 sticky top-0 bg-slate-900/95">
               <h3 className="text-lg font-semibold text-white">Configuration #{selected.id}</h3>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 {isAdmin && (
                   <select
                     value={selected.status ?? ""}
@@ -186,7 +186,7 @@ export default function ConfigHistoryList() {
                 )}
 
                 <button
-                  className="text-slate-300 hover:text-rose-400"
+                  className="text-slate-300 hover:text-rose-400 text-left sm:text-right"
                   onClick={() => setSelected(null)}
                 >
                   Close
@@ -211,34 +211,36 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">CPU</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                {specs.cpu && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Processor</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.cpu}</td>
-                                  </tr>
-                                )}
-                                {specs.cpuCores && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Cores/Threads</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.cpuCores} / {specs.cpuThreads || "—"}</td>
-                                  </tr>
-                                )}
-                                {specs.cpuCache && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Cache</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.cpuCache}</td>
-                                  </tr>
-                                )}
-                                {specs.cpuFrequency && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Frequency</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.cpuFrequency}</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[360px] text-sm">
+                                <tbody>
+                                  {specs.cpu && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Processor</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.cpu}</td>
+                                    </tr>
+                                  )}
+                                  {specs.cpuCores && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Cores/Threads</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.cpuCores} / {specs.cpuThreads || "—"}</td>
+                                    </tr>
+                                  )}
+                                  {specs.cpuCache && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Cache</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.cpuCache}</td>
+                                    </tr>
+                                  )}
+                                  {specs.cpuFrequency && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Frequency</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.cpuFrequency}</td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -248,14 +250,16 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">GPU</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                <tr className="hover:bg-slate-800/20">
-                                  <td className="px-4 py-2 font-medium text-slate-300">Graphics</td>
-                                  <td className="px-4 py-2 text-slate-200">{specs.gpu}</td>
-                                </tr>
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[320px] text-sm">
+                                <tbody>
+                                  <tr className="hover:bg-slate-800/20">
+                                    <td className="px-4 py-2 font-medium text-slate-300">Graphics</td>
+                                    <td className="px-4 py-2 text-slate-200">{specs.gpu}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -265,22 +269,24 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">Memory</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                {specs.ram && (
-                                  <tr className="hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">RAM</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.ram}</td>
-                                  </tr>
-                                )}
-                                {specs.ramSlots && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Slots/Speed</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.ramSlots} / {specs.ramSpeed || "—"}</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[320px] text-sm">
+                                <tbody>
+                                  {specs.ram && (
+                                    <tr className="hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">RAM</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.ram}</td>
+                                    </tr>
+                                  )}
+                                  {specs.ramSlots && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Slots/Speed</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.ramSlots} / {specs.ramSpeed || "—"}</td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -290,22 +296,24 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">Storage</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                {specs.storage && (
-                                  <tr className="hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Primary</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.storage}</td>
-                                  </tr>
-                                )}
-                                {specs.nvmeSlots && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">NVMe Slots</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.nvmeSlots}</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[320px] text-sm">
+                                <tbody>
+                                  {specs.storage && (
+                                    <tr className="hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Primary</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.storage}</td>
+                                    </tr>
+                                  )}
+                                  {specs.nvmeSlots && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">NVMe Slots</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.nvmeSlots}</td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -315,22 +323,24 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">Power</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                {specs.powerSupply && (
-                                  <tr className="hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Supply</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.powerSupply}</td>
-                                  </tr>
-                                )}
-                                {specs.batteryInfo && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Battery</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.batteryInfo}</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[320px] text-sm">
+                                <tbody>
+                                  {specs.powerSupply && (
+                                    <tr className="hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Supply</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.powerSupply}</td>
+                                    </tr>
+                                  )}
+                                  {specs.batteryInfo && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Battery</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.batteryInfo}</td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -340,28 +350,30 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">Display & I/O</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                {specs.screen && (
-                                  <tr className="hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Screen</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.screen}</td>
-                                  </tr>
-                                )}
-                                {specs.ioPorts && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Ports</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.ioPorts}</td>
-                                  </tr>
-                                )}
-                                {specs.webcam && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Webcam</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.webcam}</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[320px] text-sm">
+                                <tbody>
+                                  {specs.screen && (
+                                    <tr className="hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Screen</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.screen}</td>
+                                    </tr>
+                                  )}
+                                  {specs.ioPorts && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Ports</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.ioPorts}</td>
+                                    </tr>
+                                  )}
+                                  {specs.webcam && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Webcam</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.webcam}</td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -371,22 +383,24 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">System</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                {specs.motherboard && (
-                                  <tr className="hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Motherboard</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.motherboard}</td>
-                                  </tr>
-                                )}
-                                {specs.coolingSystem && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Cooling</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.coolingSystem}</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[320px] text-sm">
+                                <tbody>
+                                  {specs.motherboard && (
+                                    <tr className="hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Motherboard</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.motherboard}</td>
+                                    </tr>
+                                  )}
+                                  {specs.coolingSystem && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Cooling</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.coolingSystem}</td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -396,22 +410,24 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">Features</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                {specs.audioFeatures && (
-                                  <tr className="hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Audio</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.audioFeatures}</td>
-                                  </tr>
-                                )}
-                                {specs.networkFeatures && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Networking</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.networkFeatures}</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[320px] text-sm">
+                                <tbody>
+                                  {specs.audioFeatures && (
+                                    <tr className="hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Audio</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.audioFeatures}</td>
+                                    </tr>
+                                  )}
+                                  {specs.networkFeatures && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Networking</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.networkFeatures}</td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -421,28 +437,30 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">Physical</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                {specs.size && (
-                                  <tr className="hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Size</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.size}</td>
-                                  </tr>
-                                )}
-                                {specs.weight && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Weight</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.weight}</td>
-                                  </tr>
-                                )}
-                                {specs.upgradability && (
-                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                    <td className="px-4 py-2 font-medium text-slate-300">Upgradability</td>
-                                    <td className="px-4 py-2 text-slate-200">{specs.upgradability}</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[320px] text-sm">
+                                <tbody>
+                                  {specs.size && (
+                                    <tr className="hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Size</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.size}</td>
+                                    </tr>
+                                  )}
+                                  {specs.weight && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Weight</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.weight}</td>
+                                    </tr>
+                                  )}
+                                  {specs.upgradability && (
+                                    <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                      <td className="px-4 py-2 font-medium text-slate-300">Upgradability</td>
+                                      <td className="px-4 py-2 text-slate-200">{specs.upgradability}</td>
+                                    </tr>
+                                  )}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -452,14 +470,16 @@ export default function ConfigHistoryList() {
                             <div className="bg-slate-800/40 px-4 py-3">
                               <h4 className="font-semibold text-slate-200">Device</h4>
                             </div>
-                            <table className="w-full text-sm">
-                              <tbody>
-                                <tr className="hover:bg-slate-800/20">
-                                  <td className="px-4 py-2 font-medium text-slate-300">Model</td>
-                                  <td className="px-4 py-2 text-slate-200">{specs.model}</td>
-                                </tr>
-                              </tbody>
-                            </table>
+                            <div className="overflow-x-auto">
+                              <table className="w-full min-w-[320px] text-sm">
+                                <tbody>
+                                  <tr className="hover:bg-slate-800/20">
+                                    <td className="px-4 py-2 font-medium text-slate-300">Model</td>
+                                    <td className="px-4 py-2 text-slate-200">{specs.model}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         )}
 
@@ -468,26 +488,28 @@ export default function ConfigHistoryList() {
                           <div className="bg-slate-800/40 px-4 py-3">
                             <h4 className="font-semibold text-slate-200">Pricing & Info</h4>
                           </div>
-                          <table className="w-full text-sm">
-                            <tbody>
-                              {selected.unitPrice && (
-                                <tr className="hover:bg-slate-800/20">
-                                  <td className="px-4 py-2 font-medium text-slate-300">Unit Price</td>
-                                  <td className="px-4 py-2 text-slate-200">{selected.unitPrice}</td>
-                                </tr>
-                              )}
-                              <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                <td className="px-4 py-2 font-medium text-slate-300">Generated By</td>
-                                <td className="px-4 py-2 text-slate-200">{selected.usedAi ? "AI Generated" : "Baseline Fallback"}</td>
-                              </tr>
-                              {selected.status && (
+                          <div className="overflow-x-auto">
+                            <table className="w-full min-w-[320px] text-sm">
+                              <tbody>
+                                {selected.unitPrice && (
+                                  <tr className="hover:bg-slate-800/20">
+                                    <td className="px-4 py-2 font-medium text-slate-300">Unit Price</td>
+                                    <td className="px-4 py-2 text-slate-200">{selected.unitPrice}</td>
+                                  </tr>
+                                )}
                                 <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
-                                  <td className="px-4 py-2 font-medium text-slate-300">Status</td>
-                                  <td className="px-4 py-2 text-slate-200">{selected.status.charAt(0).toUpperCase() + selected.status.slice(1)}</td>
+                                  <td className="px-4 py-2 font-medium text-slate-300">Generated By</td>
+                                  <td className="px-4 py-2 text-slate-200">{selected.usedAi ? "AI Generated" : "Baseline Fallback"}</td>
                                 </tr>
-                              )}
-                            </tbody>
-                          </table>
+                                {selected.status && (
+                                  <tr className="border-t border-slate-700/40 hover:bg-slate-800/20">
+                                    <td className="px-4 py-2 font-medium text-slate-300">Status</td>
+                                    <td className="px-4 py-2 text-slate-200">{selected.status.charAt(0).toUpperCase() + selected.status.slice(1)}</td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                       </div>
                     );
