@@ -7,20 +7,19 @@ import type { AiSummary } from "@/lib/openrouter";
 import { exportToExcel, exportToCSV, type ExportData } from "@/lib/export";
 
 const usageTypes = [
-  "office",
-  "web",
-  "editing",
-  "rendering",
-  "coding",
-  "data analysis",
-  "gaming",
-  "server",
-  "mixed",
+  "Office",
+  "Web",
+  "Editing",
+  "Rendering",
+  "Coding",
+  "Data Analysis",
+  "Gaming",
+  "Server",
+  "Mixed",
 ] as const;
 
-const quantityOptions = ["1", "5-20", "20-50", "50-200", "200+"] as const;
-const formFactors = ["laptop", "desktop", "SFF", "workstation", "ultrabook", "server"] as const;
-const priorities = ["cpu", "gpu", "ram", "balanced"] as const;
+const formFactors = ["Laptop", "Desktop", "SFF", "Workstation", "Ultrabook", "Server"] as const;
+const priorities = ["CPU", "GPU", "RAM", "Balanced"] as const;
 
 const softwareOptions = [
   "Microsoft Office",
@@ -79,7 +78,7 @@ const complianceOptions = ["TPM 2.0", "TAA", "EPEAT", "None", "Other"] as const;
 type FormState = {
   usageType: (typeof usageTypes)[number];
   budgetRange: string;
-  quantity: (typeof quantityOptions)[number];
+  quantity: string;
   formFactor: (typeof formFactors)[number];
   requiredSoftware: string[];
   brandConstraints: string;
@@ -104,13 +103,13 @@ type ApiResponse = {
 };
 
 const initialState: FormState = {
-  usageType: "office",
+  usageType: "Office",
   budgetRange: "900-1200",
   quantity: "5-20",
-  formFactor: "laptop",
+  formFactor: "Laptop",
   requiredSoftware: ["Microsoft Office"],
   brandConstraints: "Dell, HP, Lenovo",
-  performancePriority: "balanced",
+  performancePriority: "Balanced",
   storageRequirements: "1 TB NVMe",
   networkingNeeds: "1GbE",
   durabilityNeeds: "Standard",
@@ -340,19 +339,7 @@ const RequirementForm = () => {
             />
           </Field>
 
-          <Field label="Quantity">
-            <select
-              className="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
-              value={form.quantity}
-              onChange={(event) => handleChange("quantity", event.target.value)}
-            >
-              {quantityOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </Field>
+          
 
           <Field label="Form Factor">
             <select
@@ -366,6 +353,16 @@ const RequirementForm = () => {
                 </option>
               ))}
             </select>
+          </Field>
+
+          <Field label="Quantity">
+            <input
+              type="text"
+              className="rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-white"
+              value={form.quantity}
+              onChange={(event) => handleChange("quantity", event.target.value)}
+              placeholder="e.g., 10 or 5-20"
+            />
           </Field>
 
           <Field label="Performance Priority">
@@ -853,27 +850,35 @@ const RequirementForm = () => {
                       <span className="font-semibold text-emerald-100">{result.requirements.quantity} units</span>
                     </div>
                     {(() => {
-                      const unitPriceStr = result.aiSummary.unitPrice.replace(/[^0-9.]/g, '');
+                      const unitPriceStr = result.aiSummary.unitPrice.replace(/[^0-9.]/g, "");
                       const unitPriceNum = parseFloat(unitPriceStr);
-                      
-                      if (!isNaN(unitPriceNum)) {
-                        // Parse quantity range and calculate
-                        const qty = result.requirements.quantity;
-                        let estimatedQty = 1;
-                        
-                        if (qty === "1") estimatedQty = 1;
-                        else if (qty === "5-20") estimatedQty = 12;
-                        else if (qty === "20-50") estimatedQty = 35;
-                        else if (qty === "50-200") estimatedQty = 125;
-                        else if (qty === "200+") estimatedQty = 250;
-                        
+
+                      const estimateQuantity = (qty: string) => {
+                        const range = qty.match(/(\d+)\s*-\s*(\d+)/);
+                        if (range) {
+                          const low = parseInt(range[1], 10);
+                          const high = parseInt(range[2], 10);
+                          if (!Number.isNaN(low) && !Number.isNaN(high) && high >= low) {
+                            return Math.round((low + high) / 2);
+                          }
+                        }
+                        const single = qty.match(/(\d+)/);
+                        if (single) {
+                          const value = parseInt(single[1], 10);
+                          if (!Number.isNaN(value)) return value;
+                        }
+                        return 1;
+                      };
+
+                      if (!Number.isNaN(unitPriceNum)) {
+                        const estimatedQty = estimateQuantity(result.requirements.quantity);
                         const totalPrice = unitPriceNum * estimatedQty;
-                        
+
                         return (
                           <div className="flex items-center justify-between text-base border-t-2 border-emerald-500/30 pt-3">
                             <span className="font-semibold text-emerald-200">Estimated Total:</span>
                             <span className="text-2xl font-bold text-emerald-100">
-                              ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              ${totalPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                           </div>
                         );
